@@ -21,12 +21,11 @@ public class XMLFileRebrandingWorker implements Runnable {
     private File file;
     private String from;
     private String to;
-    private Properties props;
     boolean wasDocumentRebranded = false;
 
     public XMLFileRebrandingWorker(File file, Properties props) {
         this.file = file;
-        this.props = props;
+        //todo throw exception if from/to properties are not found
         this.from = props.getProperty(PROP_REBRANDING_FROM);
         this.to = props.getProperty(PROP_REBRANDING_TO);
     }
