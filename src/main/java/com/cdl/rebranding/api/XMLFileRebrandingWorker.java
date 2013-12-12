@@ -89,9 +89,9 @@ public class XMLFileRebrandingWorker implements Runnable {
 
     private void makeBackUp() {
         String directory = file.getParent() + "/";
-        String fileNameWithoutExtension = file.getName().split("\\.xml$")[0];
-        new File(directory + fileNameWithoutExtension + Utils.BAKUP_EXTENSION).delete();
-        file.renameTo(new File(directory + fileNameWithoutExtension + Utils.BAKUP_EXTENSION));
+        String fileNameWithoutExtension = file.getName().split("(\\.xml|\\.xsl)$")[0];
+        new File(directory + fileNameWithoutExtension + BAKUP_EXTENSION).delete();
+        file.renameTo(new File(directory + fileNameWithoutExtension + BAKUP_EXTENSION));
     }
 
     private void saveRebrandedToFile(Document doc, String absoluteFileNamePath) throws TransformerException {

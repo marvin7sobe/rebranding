@@ -42,16 +42,7 @@ public class FilesRebrandingManager {
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         List<Future> futures = new ArrayList<Future>(files.length);
         for (File file : files) {
-            Runnable worker = null;
-            String fileName = file.getName().toLowerCase();
-            if (fileName.endsWith(XML_EXTENSION)) {
-                worker = new XMLFileRebrandingWorker(file, props);
-            } else if (fileName.endsWith(XSL_EXTENSION)) {
-                //todo xsl rebranding
-            }
-            if (worker != null) {
-                futures.add(executorService.submit(worker));
-            }
+            futures.add(executorService.submit(new XMLFileRebrandingWorker(file, props)));
         }
 
         for (Future future : futures) {
