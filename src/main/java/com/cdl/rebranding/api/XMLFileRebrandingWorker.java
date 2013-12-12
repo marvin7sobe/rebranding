@@ -13,20 +13,22 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.util.Properties;
 
-import static com.cdl.rebranding.api.Utils.makeReplacement;
+import static com.cdl.rebranding.api.Utils.*;
 
 public class XMLFileRebrandingWorker implements Runnable {
     private File file;
     private String from;
     private String to;
+    private Properties props;
     boolean wasDocumentRebranded = false;
 
-    public XMLFileRebrandingWorker(File file) {
-        //todo get parameters as well and from and to from them
+    public XMLFileRebrandingWorker(File file, Properties props) {
         this.file = file;
-        this.from = "Tridion";
-        this.to = "SDL Tridion";
+        this.props = props;
+        this.from = props.getProperty(PROP_REBRANDING_FROM);
+        this.to = props.getProperty(PROP_REBRANDING_TO);
     }
 
     @Override
@@ -88,8 +90,8 @@ public class XMLFileRebrandingWorker implements Runnable {
     private void makeBackUp() {
         String directory = file.getParent() + "/";
         String fileNameWithoutExtension = file.getName().split("\\.xml$")[0];
-        new File(directory + fileNameWithoutExtension + ".bak").delete();
-        file.renameTo(new File(directory + fileNameWithoutExtension + ".bak"));
+        new File(directory + fileNameWithoutExtension + Utils.BAKUP_EXTENSION).delete();
+        file.renameTo(new File(directory + fileNameWithoutExtension + Utils.BAKUP_EXTENSION));
     }
 
     private void saveRebrandedToFile(Document doc, String absoluteFileNamePath) throws TransformerException {
