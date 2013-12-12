@@ -1,4 +1,4 @@
-package com.cdl.rebranding;
+package com.cdl.rebranding.api;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -14,7 +14,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 
-import static com.cdl.rebranding.Utils.makeReplacement;
+import static com.cdl.rebranding.api.Utils.makeReplacement;
 
 public class XMLFileRebrandingWorker implements Runnable {
     private File file;
