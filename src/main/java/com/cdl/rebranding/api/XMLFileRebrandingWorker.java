@@ -21,7 +21,7 @@ public class XMLFileRebrandingWorker implements Runnable {
     private File file;
     private String from;
     private String to;
-    boolean wasDocumentRebranded = false;
+    private boolean wasDocumentRebranded = false;
 
     public XMLFileRebrandingWorker(File file, Properties props) {
         this.file = file;
