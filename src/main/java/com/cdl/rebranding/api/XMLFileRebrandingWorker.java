@@ -15,9 +15,13 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.util.Properties;
 
-import static com.cdl.rebranding.api.Utils.*;
-
 public class XMLFileRebrandingWorker implements Runnable {
+    private static final String TITLE_ATTR_NAME = "title";
+    private static final String BAKUP_EXTENSION = ".bak";
+    private static final String PROP_REBRANDING_FROM = "rebranding.from";
+    private static final String PROP_REBRANDING_TO = "rebranding.to";
+    private static final String TO_PLACEHOLDER = "1___to___1";
+    private static final String FILES_EXTENTION_REGEXP = "(\\.xml|\\.xsl)$";
     private File file;
     private String from;
     private String to;
@@ -28,6 +32,12 @@ public class XMLFileRebrandingWorker implements Runnable {
         //todo throw exception if from/to properties are not found
         this.from = props.getProperty(PROP_REBRANDING_FROM);
         this.to = props.getProperty(PROP_REBRANDING_TO);
+    }
+
+    public static String makeReplacement(String string, String from, String to) {
+        String stringWithToPlaceholder = string.replaceAll(to, TO_PLACEHOLDER);
+        String result = stringWithToPlaceholder.replaceAll(from, to);
+        return result.replaceAll(TO_PLACEHOLDER, to);
     }
 
     @Override
@@ -91,7 +101,7 @@ public class XMLFileRebrandingWorker implements Runnable {
 
     private void makeBackUp() {
         String directory = file.getParent() + "/";
-        String fileNameWithoutExtension = file.getName().split("(\\.xml|\\.xsl)$")[0];
+        String fileNameWithoutExtension = file.getName().split(FILES_EXTENTION_REGEXP)[0];
         new File(directory + fileNameWithoutExtension + BAKUP_EXTENSION).delete();
         file.renameTo(new File(directory + fileNameWithoutExtension + BAKUP_EXTENSION));
     }

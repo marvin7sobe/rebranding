@@ -9,9 +9,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static com.cdl.rebranding.api.Utils.*;
-
 public class FilesRebrandingManager {
+    private static final String CONF_PROPERTIES_FILE = "conf.properties";
+    private static final String XML_EXTENSION = ".xml";
+    private static final String XSL_EXTENSION = ".xsl";
     private File filesDirectory;
     private Properties props;
 
@@ -39,28 +40,31 @@ public class FilesRebrandingManager {
 
     public void startRebranding() {
         File[] files = getFilesForRebranding();
-        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        List<Future> futures = new ArrayList<Future>(files.length);
-        for (File file : files) {
-            futures.add(executorService.submit(new XMLFileRebrandingWorker(file, props)));
-        }
-
-        for (Future future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                System.out.println(e);
-            } catch (ExecutionException e) {
-                System.out.println(e);
+        if (files != null && files.length > 0) {
+            ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            List<Future> futures = new ArrayList<Future>(files.length);
+            for (File file : files) {
+                futures.add(executorService.submit(new XMLFileRebrandingWorker(file, props)));
             }
+
+            for (Future future : futures) {
+                try {
+                    future.get();
+                } catch (InterruptedException e) {
+                    System.out.println(e);
+                } catch (ExecutionException e) {
+                    System.out.println(e);
+                }
+            }
+            executorService.shutdown();
         }
-        executorService.shutdown();
     }
 
     private File[] getFilesForRebranding() {
         return filesDirectory.listFiles(new FileFilter() {
             public boolean accept(File file) {
-                return file.getName().toLowerCase().endsWith(XML_EXTENSION) || file.getName().toLowerCase().endsWith(XSL_EXTENSION);
+                String fileName = file.getName().toLowerCase();
+                return fileName.endsWith(XML_EXTENSION) || fileName.endsWith(XSL_EXTENSION);
             }
         });
     }
