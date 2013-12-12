@@ -1,1 +1,1 @@
-Rebranding XML and XSL files project
+Rebranding in XML and XSL files
