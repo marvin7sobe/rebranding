@@ -1,6 +1,9 @@
 package com.cdl.rebranding;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -11,87 +14,89 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 
-public class XMLFileRebrandingWorker extends Thread {
+import static com.cdl.rebranding.Utils.makeReplacement;
+
+public class XMLFileRebrandingWorker implements Runnable {
     private File file;
     private String from;
     private String to;
+    boolean wasDocumentRebranded = false;
 
     public XMLFileRebrandingWorker(File file) {
         //todo get parameters as well and from and to from them
         this.file = file;
         this.from = "Tridion";
-        this.to = "Tridion1";
+        this.to = "SDL Tridion";
     }
 
     @Override
     public void run() {
-        parseFile();
-    }
-
-    private void parseFile() {
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(file);
             if (doc.hasChildNodes()) {
-                boolean wasAnyRebranding = makeRebranding(doc.getChildNodes());
-                if (wasAnyRebranding) {
-                    saveRebrandedToFile(doc);
+                makeRebranding(doc.getChildNodes());
+                if (wasDocumentRebranded) {
+                    String fileNameToSave = file.getAbsolutePath();
+                    makeBackUp();
+                    saveRebrandedToFile(doc, fileNameToSave);
                 }
             }
         } catch (Exception e) {
-            System.out.println("ERROR happened during processing xml file: " + file.getName());
+            System.out.println("ERROR happened during rebranding in file: " + file.getName());
         }
     }
 
-    private void saveRebrandedToFile(Document doc) throws TransformerException {
+    private void makeRebranding(NodeList nodeList) {
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
+            switch (node.getNodeType()) {
+                case Node.TEXT_NODE:
+                    makeRebrandingInNodeAndUpdateRebrandingStatus(node);
+                    break;
+                case Node.ELEMENT_NODE:
+                    if (node.hasAttributes()) {
+                        NamedNodeMap nodeMap = node.getAttributes();
+                        for (int j = 0; j < nodeMap.getLength(); j++) {
+                            makeRebrandingInNodeAndUpdateRebrandingStatus(nodeMap.item(j));
+                        }
+                    }
+                    if (node.hasChildNodes()) {
+                        makeRebranding(node.getChildNodes());
+                    }
+                    break;
+            }
+        }
+    }
+
+    private void makeRebrandingInNodeAndUpdateRebrandingStatus(Node node) {
+        boolean wasRebranded = false;
+        String nodeText = node.getTextContent();
+        if (nodeText != null && nodeText.length() >= to.length()) {
+            String nodeTextRebranded = makeReplacement(nodeText, from, to);
+            if (!nodeText.equals(nodeTextRebranded)) {
+                node.setTextContent(nodeTextRebranded);
+                wasRebranded = true;
+            }
+        }
+        if (wasDocumentRebranded == false && wasRebranded == true) {
+            wasDocumentRebranded = true;
+        }
+    }
+
+    private void makeBackUp() {
         String directory = file.getParent() + "/";
         String fileNameWithoutExtension = file.getName().split("\\.xml$")[0];
-        new File(directory+ fileNameWithoutExtension + ".bak").delete();
-        file.renameTo(new File(directory+ fileNameWithoutExtension + ".bak"));
+        new File(directory + fileNameWithoutExtension + ".bak").delete();
+        file.renameTo(new File(directory + fileNameWithoutExtension + ".bak"));
+    }
 
+    private void saveRebrandedToFile(Document doc, String absoluteFileNamePath) throws TransformerException {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
-        StreamResult result = new StreamResult(new File(directory+ fileNameWithoutExtension + ".xml"));
+        StreamResult result = new StreamResult(new File(absoluteFileNamePath));
         transformer.transform(source, result);
-    }
-
-    private boolean makeRebranding(NodeList nodeList) {
-        boolean wasAnyRebranding = false;
-        for (int count = 0; count < nodeList.getLength(); count++) {
-            Node node = nodeList.item(count);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                String nodeText = node.getTextContent();
-                if (nodeText.contains(from)) {
-                    node.setTextContent(makeRebrandingInString(nodeText, from, to));
-                    wasAnyRebranding = true;
-                }
-                if (node.hasAttributes()) {
-                    NamedNodeMap nodeMap = node.getAttributes();
-                    for (int i = 0; i < nodeMap.getLength(); i++) {
-                        Node attribute = nodeMap.item(i);
-                        if (attribute.getNodeValue().contains(from)) {
-                            attribute.setNodeValue(makeRebrandingInString(attribute.getNodeValue(), from, to));
-                            wasAnyRebranding = true;
-                        }
-
-                    }
-                }
-                if (node.hasChildNodes()) {
-                    boolean wasAnyRebrandingInChild = makeRebranding(node.getChildNodes());
-                    if (wasAnyRebranding == false) {
-                        wasAnyRebranding = wasAnyRebrandingInChild;
-                    }
-                }
-            }
-        }
-        return wasAnyRebranding;
-    }
-
-    private String makeRebrandingInString(String string, String from, String to) {
-        //todo more clear algorith to not replace not needed
-        //todo move to another place
-        return string.replace(from, to);
     }
 }

@@ -17,11 +17,11 @@ public class FilesRebrandingManager {
     }
 
     public void startRebranding() {
-        File[] files = getFiles();
+        File[] files = getFilesForRebranding();
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         List<Future> futures = new ArrayList<Future>(files.length);
         for (File file : files) {
-            Thread worker = null;
+            Runnable worker = null;
             String fileName = file.getName().toLowerCase();
             if (fileName.endsWith(".xml")) {
                 worker = new XMLFileRebrandingWorker(file);
@@ -45,7 +45,7 @@ public class FilesRebrandingManager {
         executorService.shutdown();
     }
 
-    private File[] getFiles() {
+    private File[] getFilesForRebranding() {
         //todo get files from subdirectories
         return filesDirectory.listFiles(new FileFilter() {
             public boolean accept(File file) {
