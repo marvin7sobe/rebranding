@@ -8,11 +8,11 @@ public class Utils {
     public static final String XSL_EXTENSION = ".xsl";
     public static final String PROP_REBRANDING_FROM = "rebranding.from";
     public static final String PROP_REBRANDING_TO = "rebranding.to";
+    private static final String TO_PLACEHOLDER = "1___to___1";
 
     public static String makeReplacement(String string, String from, String to) {
-        String toPlaceholder = "1___to___1";
-        String stringWithToPlaceholder = string.replaceAll(to, toPlaceholder);
+        String stringWithToPlaceholder = string.replaceAll(to, TO_PLACEHOLDER);
         String result = stringWithToPlaceholder.replaceAll(from, to);
-        return result.replaceAll(toPlaceholder, to);
+        return result.replaceAll(TO_PLACEHOLDER, to);
     }
 }
