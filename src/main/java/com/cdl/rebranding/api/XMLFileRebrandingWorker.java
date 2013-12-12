@@ -61,7 +61,10 @@ public class XMLFileRebrandingWorker implements Runnable {
                     if (node.hasAttributes()) {
                         NamedNodeMap nodeMap = node.getAttributes();
                         for (int j = 0; j < nodeMap.getLength(); j++) {
-                            makeRebrandingInNodeAndUpdateRebrandingStatus(nodeMap.item(j));
+                            String attrName = nodeMap.item(j).getNodeName();
+                            if (attrName.equalsIgnoreCase(TITLE_ATTR_NAME)) {
+                                makeRebrandingInNodeAndUpdateRebrandingStatus(nodeMap.item(j));
+                            }
                         }
                     }
                     if (node.hasChildNodes()) {

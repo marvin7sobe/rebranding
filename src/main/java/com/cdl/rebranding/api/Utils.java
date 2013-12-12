@@ -8,6 +8,7 @@ public class Utils {
     public static final String XSL_EXTENSION = ".xsl";
     public static final String PROP_REBRANDING_FROM = "rebranding.from";
     public static final String PROP_REBRANDING_TO = "rebranding.to";
+    public static final String TITLE_ATTR_NAME = "title";
     private static final String TO_PLACEHOLDER = "1___to___1";
 
     public static String makeReplacement(String string, String from, String to) {
