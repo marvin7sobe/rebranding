@@ -13,19 +13,25 @@ public class FilesRebrandingManager {
     public static final String CONF_PROPERTIES_FILE = "conf.properties";
     private static final String XML_EXTENSION = ".xml";
     private static final String XSL_EXTENSION = ".xsl";
-    private File filesDirectory;
+    private File baseFilesDirectory;
     private Properties props;
 
-    public FilesRebrandingManager(String filesDirectory) throws IOException {
-        this.filesDirectory = readDirectory(filesDirectory);
+    public FilesRebrandingManager(String baseFilesDirectory) throws IOException {
+        this.baseFilesDirectory = readDirectory(baseFilesDirectory);
         this.props = readPropertiesFromFile();
     }
 
-    private File readDirectory(String filesDirectory) throws FileNotFoundException {
-        if (filesDirectory == null || filesDirectory.length() == 0 || !(new File(filesDirectory).exists())) {
-            throw new FileNotFoundException("Incorrect directory path: " + filesDirectory);
+    private File readDirectory(String baseFilesDirectory) throws FileNotFoundException {
+        File directory = null;
+        boolean isValidDirectory = baseFilesDirectory != null
+                && baseFilesDirectory.length() > 0
+                && ((directory = new File(baseFilesDirectory)).exists())
+                && directory.isDirectory();
+
+        if (isValidDirectory) {
+            return directory;
         }
-        return new File(filesDirectory);
+        throw new FileNotFoundException("Incorrect directory: " + baseFilesDirectory);
     }
 
     private Properties readPropertiesFromFile() throws IOException {
@@ -39,10 +45,10 @@ public class FilesRebrandingManager {
     }
 
     public void startRebranding() {
-        File[] files = getFilesForRebranding();
-        if (files != null && files.length > 0) {
+        List<File> files = getFilesForRebranding(baseFilesDirectory);
+        if (files.size() > 0) {
             ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-            List<Future> futures = new ArrayList<Future>(files.length);
+            List<Future> futures = new ArrayList<Future>(files.size());
             for (File file : files) {
                 futures.add(executorService.submit(new XMLFileRebrandingWorker(file, props)));
             }
@@ -60,12 +66,18 @@ public class FilesRebrandingManager {
         }
     }
 
-    private File[] getFilesForRebranding() {
-        return filesDirectory.listFiles(new FileFilter() {
-            public boolean accept(File file) {
+    private List<File> getFilesForRebranding(File filesDirectory) {
+        List<File> result = new ArrayList<File>();
+        for (File file : filesDirectory.listFiles()) {
+            if (file.isDirectory()) {
+                result.addAll(getFilesForRebranding(file));
+            } else {
                 String fileName = file.getName().toLowerCase();
-                return fileName.endsWith(XML_EXTENSION) || fileName.endsWith(XSL_EXTENSION);
+                if (fileName.endsWith(XML_EXTENSION) || fileName.endsWith(XSL_EXTENSION)) {
+                    result.add(file);
+                }
             }
-        });
+        }
+        return result;
     }
 }
