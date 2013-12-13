@@ -16,10 +16,10 @@ import java.io.File;
 import java.util.Properties;
 
 public class XMLFileRebrandingWorker implements Runnable {
-    private static final String TITLE_ATTR_NAME = "title";
-    private static final String BAKUP_EXTENSION = ".bak";
+    public static final String BAKUP_EXTENSION = ".bak";
+    public static final String TITLE_ATTR_NAME = "title";
+    public static final String PROP_REBRANDING_TO = "rebranding.to";
     private static final String PROP_REBRANDING_FROM = "rebranding.from";
-    private static final String PROP_REBRANDING_TO = "rebranding.to";
     private static final String TO_PLACEHOLDER = "1___to___1";
     private static final String FILES_EXTENTION_REGEXP = "(\\.xml|\\.xsl)$";
     private File file;
@@ -87,7 +87,7 @@ public class XMLFileRebrandingWorker implements Runnable {
     private void makeRebrandingInNodeAndUpdateRebrandingStatus(Node node) {
         boolean wasRebranded = false;
         String nodeText = node.getTextContent();
-        if (nodeText != null && nodeText.length() >= to.length()) {
+        if (nodeText != null && nodeText.length() >= from.length()) {
             String nodeTextRebranded = makeReplacement(nodeText, from, to);
             if (!nodeText.equals(nodeTextRebranded)) {
                 node.setTextContent(nodeTextRebranded);

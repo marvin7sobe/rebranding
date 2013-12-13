@@ -1,0 +1,8 @@
+<root>
+    <test title="This Tridion will be updated" not-title-attribute="This Tridion attribute will not be updated">
+        <line1>Tridion has been renamed to SDL Tridion</line1>
+    </test>
+    <test title="This Tridion">
+        <line1>Tridion has been renamed to SDL Tridion</line1>
+    </test>
+</root>

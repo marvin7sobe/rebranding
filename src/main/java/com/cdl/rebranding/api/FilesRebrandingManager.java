@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class FilesRebrandingManager {
-    private static final String CONF_PROPERTIES_FILE = "conf.properties";
+    public static final String CONF_PROPERTIES_FILE = "conf.properties";
     private static final String XML_EXTENSION = ".xml";
     private static final String XSL_EXTENSION = ".xsl";
     private File filesDirectory;
