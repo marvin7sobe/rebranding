@@ -46,16 +46,20 @@ public class FilesRebrandingManager {
 
     public void startRebranding() {
         List<File> files = getFilesForRebranding(baseFilesDirectory);
+        System.out.println("Found .xml and .xsl files: " + files.size());
         if (files.size() > 0) {
             ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-            List<Future> futures = new ArrayList<Future>(files.size());
+            List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>(files.size());
             for (File file : files) {
                 futures.add(executorService.submit(new XMLFileRebrandingWorker(file, props)));
             }
-
-            for (Future future : futures) {
+            int rebrandedFiles = 0;
+            for (Future<Boolean> future : futures) {
                 try {
-                    future.get();
+                    boolean wasFileRebranded = future.get();
+                    if (wasFileRebranded) {
+                        rebrandedFiles++;
+                    }
                 } catch (InterruptedException e) {
                     System.out.println(e);
                 } catch (ExecutionException e) {
@@ -63,6 +67,7 @@ public class FilesRebrandingManager {
                 }
             }
             executorService.shutdown();
+            System.out.println("Rebranded files: " + rebrandedFiles);
         }
     }
 

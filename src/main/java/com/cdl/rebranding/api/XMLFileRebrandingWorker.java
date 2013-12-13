@@ -14,8 +14,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
-public class XMLFileRebrandingWorker implements Runnable {
+public class XMLFileRebrandingWorker implements Callable<Boolean>{
     public static final String BAKUP_EXTENSION = ".bak";
     public static final String TITLE_ATTR_NAME = "title";
     public static final String PROP_REBRANDING_TO = "rebranding.to";
@@ -41,7 +42,7 @@ public class XMLFileRebrandingWorker implements Runnable {
     }
 
     @Override
-    public void run() {
+    public Boolean call() {
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -52,11 +53,13 @@ public class XMLFileRebrandingWorker implements Runnable {
                     String fileNameToSave = file.getAbsolutePath();
                     makeBackUp();
                     saveRebrandedToFile(doc, fileNameToSave);
+                    return true;
                 }
             }
         } catch (Exception e) {
             System.out.println("ERROR happened during rebranding in file: " + file.getName());
         }
+        return false;
     }
 
     private void makeRebranding(NodeList nodeList) {
